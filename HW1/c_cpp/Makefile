@@ -1,8 +1,8 @@
 .PHONY: all clean
 
-CFLAGS+=-std=c++11 -Wall -DDEBUG -g
+CFLAGS+=-std=c99 -Wall -DDEBUG -O3
 LDFLAGS+=-lm     # link to math library
-CXX = g++
+CXX = gcc
 
 TARGET=train_hmm.o train test_hmm.o test
 
@@ -11,17 +11,17 @@ all: $(TARGET)
 	@make train
 	@make test
 
-train: train_hmm.h train_hmm.cpp train.cpp
+train: train_hmm.h train_hmm.c train.c
 	@make train_hmm.o
 	@echo "compiling train ..."
-	@$(CXX) $(CFLAGS) train.cpp train_hmm.o -o train
+	@$(CXX) $(CFLAGS) train.c train_hmm.o -o train
 
-test: test_hmm.h test_hmm.cpp test.cpp
+test: test_hmm.h test_hmm.c test.c
 	@make test_hmm.o
 	@echo "compiling test ..."
-	@$(CXX) $(CFLAGS) test.cpp test_hmm.o -o test 
+	@$(CXX) $(CFLAGS) test.c test_hmm.o -o test 
 
-%.o: %.cpp
+%.o: %.c
 	@echo "compiling $< ..."
 	@$(CXX) $(CFLAGS) $< -c -o $@
 
