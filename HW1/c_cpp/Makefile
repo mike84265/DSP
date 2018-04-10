@@ -1,13 +1,15 @@
 .PHONY: all clean
 
-CFLAGS+=-std=c++11 -Wall -O3 -DDEBUG
+CFLAGS+=-std=c++11 -Wall -DDEBUG -g
 LDFLAGS+=-lm     # link to math library
 CXX = g++
 
-TARGET=test_hmm train_hmm.o train
+TARGET=train_hmm.o train test_hmm.o test
 
 all: $(TARGET)
-# type make/make all to compile test_hmm
+	# type make/make all to compile test_hmm
+	@make train
+	@make test
 
 train: train_hmm.h train_hmm.cpp train.cpp
 	@make train_hmm.o
@@ -24,4 +26,5 @@ test: test_hmm.h test_hmm.cpp test.cpp
 	@$(CXX) $(CFLAGS) $< -c -o $@
 
 clean:
-	$(RM) $(TARGET)   # type make clean to remove the compiled file
+	$(RM) $(TARGET)   
+	# type make clean to remove the compiled file

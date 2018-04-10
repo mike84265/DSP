@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -23,8 +24,11 @@ int main(int argc, char** argv)
     }
     vector<string> v_seq;
     string buffer;
-    while (!ifs_seq.eof()) {
+    while (1) {
         ifs_seq >> buffer;
+        if (ifs_seq.eof())
+            break;
+        assert(buffer.size() != 0);
         v_seq.push_back(buffer);
     }
     ifs_seq.close();
@@ -44,14 +48,14 @@ int main(int argc, char** argv)
 
 
     for (int it=0; it<iteration; ++it) {
-
+        
+        // initialize sums
         for (int i=0; i<state_num; ++i) {
             gamma_init[i] = 0;
             gamma_sum[i] = 0;
             for (int j=0; j<state_num; ++j)
-                epsilon[i][j] = 0;
+                epsilon_sum[i][j] = 0;
         }
-
         for (int i=0; i<hmm.observ_num; ++i)
             for (int j=0; j<state_num; ++j)
                 gamma_observe[i][j] = 0;
@@ -64,8 +68,11 @@ int main(int argc, char** argv)
             accumulate_gamma_epsilon(&hmm, gamma, epsilon, v_seq[s], length, 
                 gamma_init, gamma_sum, gamma_observe, epsilon_sum);
             #ifdef DEBUG
-            system("clear");
-            printf("At iteration %d/%d, sequence %d/%d ...\n", it, iteration, s, v_seq.size());
+            if (s % 100 == 0) {
+                system("clear");
+                printf("At iteration %d/%d, sequence %d/%d ...\n", it, iteration, s, v_seq.size());
+                dumpHMM(stdout, &hmm);
+            }
             #endif
         }
         reestimate_hmm(&hmm, gamma_init, gamma_sum, gamma_observe, epsilon_sum, v_seq.size());

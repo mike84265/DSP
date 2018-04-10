@@ -4,8 +4,10 @@ using namespace std;
 double** alloc_2D_matrix(int m, int n)
 {
     double** matrix = new double* [m];
-    for (int i=0;i<m;++i)
+    for (int i=0;i<m;++i) {
         matrix[i] = new double[n];
+        assert(matrix[i] != NULL);
+    }
     return matrix;
 }
 
@@ -39,14 +41,14 @@ void calculate_beta(const HMM* hmm, const string& observe_seq, int length,
     // i: state
     int t, i, j;
     for (i=0; i<hmm->state_num; ++i)
-        beta[length][i] = 1;
+        beta[length-1][i] = 1;
     for (t=length-2; t>=0; --t)
-        for (j=0; j<hmm->state_num; ++j){
+        for (i=0; i<hmm->state_num; ++i){
             int observ_num = observe_seq[t+1] - 'A';
             assert(observ_num >= 0 && observ_num < 6);
-            beta[t][j] = 0;
-            for (i=0; i<hmm->state_num; ++i)
-                beta[t][j] += hmm->transition[i][j] * hmm->observation[observ_num][j] * beta[t+1][j];
+            beta[t][i] = 0;
+            for (j=0; j<hmm->state_num; ++j)
+                beta[t][i] += hmm->transition[i][j] * hmm->observation[observ_num][j] * beta[t+1][j];
         }
 }
 
@@ -56,20 +58,15 @@ void calculate_gamma(double** alpha, double** beta, int state_num, int length,
     // gamma[t][i]
     // t: time
     // i: state
-    double sum_t[state_num];
     int t,i,j;
-    for (i=0; i<state_num; ++i)
-        sum_t[i] = 0;
     for (t=0; t<length-1; ++t) {
         for (i=0; i<state_num; ++i) {
             gamma[t][i] = 0;
             for (j=0; j<state_num; ++j)
                 gamma[t][i] += alpha[t][j] * beta[t][j];
-            sum_t[i] += gamma[t][i];
+            gamma[t][i] = (alpha[t][i] * beta[t][i]) / gamma[t][i];
         }
     }
-    for (i=0; i<state_num; ++i) 
-        gamma[length-1][i] = sum_t[i];
 }
 
 void calculate_epsilon(const HMM* hmm, double** alpha, double** beta, int length, const string& observe_seq,
@@ -84,17 +81,16 @@ void calculate_epsilon(const HMM* hmm, double** alpha, double** beta, int length
         for (int j=0; j<hmm->state_num; ++j)
             epsilon[length-1][i][j] = 0;
     for (t=0; t<length-1; ++t) {
+        double den = 0;
+        int observ_num = observe_seq[t+1] - 'A';
+        for (int ii=0; ii<hmm->state_num; ++ii)
+            for (int jj=0; jj<hmm->state_num; ++jj)
+                den += alpha[t][ii] * hmm->transition[ii][jj] * hmm->observation[observ_num][jj] * beta[t+1][jj];
         for (i=0; i<hmm->state_num; ++i)
             for (j=0; j<hmm->state_num; ++j) {
-                int observ_num = observe_seq[t+1] - 'A';
                 assert(observ_num >= 0 && observ_num < 6);
-                double num = alpha[t][i] * hmm->transition[i][j] * hmm->observation[observ_num][j] * beta[t+1][j];
-                double den = 0;
-                for (int ii=0; ii<hmm->state_num; ++ii)
-                    for (int jj=0; jj<hmm->state_num; ++jj)
-                        den += alpha[t][ii] * hmm->transition[ii][jj] * hmm->observation[observ_num][jj] * beta[t+1][jj];
-                epsilon[t][i][j] = num / den;
-                epsilon[length-1][i][j] += num / den; // epsilon[T-1] stores the sum over t=0~T-2
+                epsilon[t][i][j] = (alpha[t][i] * hmm->transition[i][j] * hmm->observation[observ_num][j] * beta[t+1][j]) / den ;
+                epsilon[length-1][i][j] += epsilon[t][i][j]; // epsilon[T-1] stores the sum over t=0~T-2
             }
     }
 }
@@ -109,7 +105,7 @@ void accumulate_gamma_epsilon(const HMM* hmm, double** gamma, double*** epsilon,
     int t, i, j;
     for (i=0; i<hmm->state_num; ++i)
         gamma_init[i] += gamma[0][i];
-    for (t=0; t<length-1; ++t) {
+    for (t=0; t<length; ++t) {
         for (i=0; i<hmm->state_num; ++i) {
             gamma_sum[i] += gamma[t][i];
             int observ_int = observe_seq[t] - 'A';
@@ -126,8 +122,9 @@ void reestimate_hmm(HMM* hmm, double* gamma_init, double* gamma_sum, double** ga
     double** epsilon_sum, int nSamples)
 {
     int i, j, k;
-    for (i=0; i<hmm->state_num; ++i)
+    for (i=0; i<hmm->state_num; ++i) {
         hmm->initial[i] = gamma_init[i] / nSamples;
+    }
 
     for (i=0; i<hmm->state_num; ++i)
         for (j=0; j<hmm->state_num; ++j)
