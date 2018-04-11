@@ -111,19 +111,29 @@ void accumulate_gamma_epsilon(const HMM* hmm, double** gamma, double*** epsilon,
             epsilon_sum[i][j] += epsilon[length-1][i][j];
 }
 
-void reestimate_hmm(HMM* hmm, double* gamma_init, double* gamma_sum, double** gamma_observe,
+void reestimate_hmm(HMM* hmm, HMM* diff, double* gamma_init, double* gamma_sum, double** gamma_observe,
     double** epsilon_sum, int nSamples)
 {
     int i, j, k;
     for (i=0; i<hmm->state_num; ++i) {
-        hmm->initial[i] = gamma_init[i] / nSamples;
+        double newval = gamma_init[i] / nSamples;
+        diff->initial[i] = newval - hmm->initial[i];
+        hmm->initial[i] = newval;
     }
 
     for (i=0; i<hmm->state_num; ++i)
-        for (j=0; j<hmm->state_num; ++j)
-            hmm->transition[i][j] = epsilon_sum[i][j] / gamma_sum[i];
+        for (j=0; j<hmm->state_num; ++j) {
+            double newval = epsilon_sum[i][j] / gamma_sum[i];
+            diff->transition[i][j] = newval - hmm->transition[i][j];
+            // hmm->transition[i][j] = epsilon_sum[i][j] / gamma_sum[i];
+            hmm->transition[i][j] = newval;
+        }
     
     for (k=0; k<hmm->observ_num; ++k)
-        for (i=0; i<hmm->state_num; ++i)
-            hmm->observation[k][i] = gamma_observe[k][i] / gamma_sum[i];
+        for (i=0; i<hmm->state_num; ++i) {
+            double newval = gamma_observe[k][i] / gamma_sum[i];
+            diff->observation[k][i] = newval - hmm->observation[k][i];
+            // hmm->observation[k][i] = gamma_observe[k][i] / gamma_sum[i];
+            hmm->observation[k][i] = newval;
+        }
 }

@@ -11,6 +11,6 @@ void calculate_epsilon(const HMM* hmm, double** alpha, double** beta, int length
     double*** epsilon);
 void accumulate_gamma_epsilon(const HMM* hmm, double** gamma, double*** epsilon, const char* observe_seq, int length,
     double* gamma_init, double* gamma_sum, double** gamma_observe, double** epsilon_sum);
-void reestimate_hmm(HMM* hmm, double* gamma_init, double* gamma_sum, double** gamma_observe,
+void reestimate_hmm(HMM* hmm, HMM* diff, double* gamma_init, double* gamma_sum, double** gamma_observe,
     double** epsilon_sum, int nSamples);
 #endif

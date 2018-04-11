@@ -4,7 +4,7 @@ CFLAGS+=-std=c99 -Wall -DDEBUG -O3
 LDFLAGS+=-lm     # link to math library
 CXX = gcc
 
-TARGET=train_hmm.o train test_hmm.o test
+TARGET=train test train_hmm.o test_hmm.o
 
 all: $(TARGET)
 	# type make/make all to compile test_hmm

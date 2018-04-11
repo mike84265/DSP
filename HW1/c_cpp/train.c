@@ -13,8 +13,9 @@ int main(int argc, char** argv)
         exit(1);
     }
     int iteration = atoi(argv[1]);
-    HMM hmm;
+    HMM hmm, diff;
     loadHMM(&hmm, argv[2]);
+    memcpy(&diff, &hmm, sizeof(HMM));
 
     int fd = open(argv[3], O_RDONLY);
     if (fd < 0) {
@@ -68,11 +69,14 @@ int main(int argc, char** argv)
             prev = ptr+1;
             ptr = strchr(ptr+1, '\n');
         }
-        reestimate_hmm(&hmm, gamma_init, gamma_sum, gamma_observe, epsilon_sum, lineNo);
+        reestimate_hmm(&hmm, &diff, gamma_init, gamma_sum, gamma_observe, epsilon_sum, lineNo);
         #ifdef DEBUG
         system("clear");
-        printf("At iteration %d/%d: \n", it, iteration);
+        printf("Model %s, at iteration %d/%d: \n", argv[4], it, iteration);
+        printf("> New HMM: \n");
         dumpHMM(stdout, &hmm);
+        printf("> Difference: \n");
+        dumpHMM(stdout, &diff);
         #endif
     }
 
