@@ -41,7 +41,7 @@ $iter is positive integer, which is iteration of Baum-Welch algorithm.
      +- hw1_[studentID]
         +- train.c/.cpp
         +- test.c/.cpp
-	+- hmm.h
+        +- hmm.h
         +- Makefile
         +- model_01~05.txt
         +- result1~2.txt 

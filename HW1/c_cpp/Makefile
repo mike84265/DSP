@@ -1,29 +1,28 @@
 .PHONY: all clean
 
-CFLAGS+=-std=c99 -Wall -DDEBUG -O3
+CFLAGS+=-std=c99 -Wall -O3 -DDEBUG
 LDFLAGS+=-lm     # link to math library
-CXX = gcc
+CXX = g++
+CC = gcc
 
 TARGET=train test train_hmm.o test_hmm.o
 
 all: $(TARGET)
 	# type make/make all to compile test_hmm
-	@make train
-	@make test
 
 train: train_hmm.h train_hmm.c train.c
 	@make train_hmm.o
 	@echo "compiling train ..."
-	@$(CXX) $(CFLAGS) train.c train_hmm.o -o train
+	@$(CC) $(CFLAGS) train.c train_hmm.o -o train
 
 test: test_hmm.h test_hmm.c test.c
 	@make test_hmm.o
 	@echo "compiling test ..."
-	@$(CXX) $(CFLAGS) test.c test_hmm.o -o test 
+	@$(CC) $(CFLAGS) test.c test_hmm.o -o test 
 
 %.o: %.c
 	@echo "compiling $< ..."
-	@$(CXX) $(CFLAGS) $< -c -o $@
+	@$(CC) $(CFLAGS) $< -c -o $@
 
 clean:
 	$(RM) $(TARGET)   
