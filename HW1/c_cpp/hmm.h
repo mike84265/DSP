@@ -76,6 +76,7 @@ static void loadHMM( HMM *hmm, const char *filename )
                     fscanf(fp, "%lf", &( hmm->observation[i][j]) );
         }
     }
+    fclose(fp);
 }
 
 static void dumpHMM( FILE *fp, HMM *hmm )

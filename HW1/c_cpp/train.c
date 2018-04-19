@@ -108,4 +108,5 @@ int main(int argc, char** argv)
     free(gamma_sum);
     free(gamma_observe);
     free(epsilon_sum);
+    free(hmm.model_name);
 }
