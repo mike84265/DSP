@@ -54,7 +54,7 @@ void calculate_gamma(double** alpha, double** beta, int state_num, int length,
     // t: time
     // i: state
     int t,i,j;
-    for (t=0; t<length-1; ++t) {
+    for (t=0; t<length; ++t) {
         for (i=0; i<state_num; ++i) {
             gamma[t][i] = 0;
             for (j=0; j<state_num; ++j)
@@ -94,8 +94,8 @@ void accumulate_gamma_epsilon(const HMM* hmm, double** gamma, double*** epsilon,
 {
     // gamma_init[i]: sum of initial gamma at t=0 of state i
     // gamma_sum[i]: sum of gamma among t=0~T-2 of state i
-    // gamma_observe[ob][i]: sum of gamma of state i given observation
-    // epsilon_sum[i][j]: sum of epsilon from state i to state j
+    // gamma_observe[ob][i]: sum of gamma at state i and observation ob
+    // epsilon_sum[i][j]: sum of epsilon from state i to state j over t=0~T
     int t, i, j;
     for (i=0; i<hmm->state_num; ++i)
         gamma_init[i] += gamma[0][i];
